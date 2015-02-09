@@ -40,6 +40,11 @@ extern "C"{
 
 #include "sph_bmw.h"
 
+// tpruvot
+#undef SPH_LITTLE_FAST
+#define SPH_LITTLE_FAST 0
+#define opt_dec64le_aligned(src) *((const unsigned long long *)(src));
+
 #if SPH_SMALL_FOOTPRINT && !defined SPH_SMALL_FOOTPRINT_BMW
 #define SPH_SMALL_FOOTPRINT_BMW   1
 #endif
@@ -718,9 +723,10 @@ compress_big(const unsigned char *data, const sph_u64 h[16], sph_u64 dh[16])
 {
 #if SPH_LITTLE_FAST
 #define M(x)    sph_dec64le_aligned(data + 8 * (x))
+//#define M(x)    opt_dec64le_aligned(data + (8 * x))
 #else
-	sph_u64 mv[16];
-
+//	sph_u64 mv[16];
+#if 0
 	mv[ 0] = sph_dec64le_aligned(data +   0);
 	mv[ 1] = sph_dec64le_aligned(data +   8);
 	mv[ 2] = sph_dec64le_aligned(data +  16);
@@ -737,8 +743,12 @@ compress_big(const unsigned char *data, const sph_u64 h[16], sph_u64 dh[16])
 	mv[13] = sph_dec64le_aligned(data + 104);
 	mv[14] = sph_dec64le_aligned(data + 112);
 	mv[15] = sph_dec64le_aligned(data + 120);
-#define M(x)    (mv[x])
 #endif
+//	memcpy(&mv[0], data, 128);
+//#define M(x)    (mv[x])
+#define M(x)    ((sph_u64*)data)[x]
+#endif
+
 #define H(x)    (h[x])
 #define dH(x)   (dh[x])
 
